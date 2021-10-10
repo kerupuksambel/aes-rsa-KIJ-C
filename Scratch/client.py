@@ -1,11 +1,16 @@
 from socket import *
 from base64 import *
 
-from AES import enc, dec, keys
-from RSA import enc as encRSA
+import RSA, AES
 
-ip = input('Masukkan IP address yang ingin dituju : ')
-port = int(input('Masukkan port yang ingin dituju : '))
+from sys import argv
+
+if(len(argv) == 1):
+    ip = input('Masukkan IP address yang ingin dituju : ')
+    port = int(input('Masukkan port yang ingin dituju : '))
+elif argv[1] == 'debug':
+    ip = 'localhost'
+    port = 5000
 
 server_address = (ip, port)
 client_socket = socket(AF_INET, SOCK_STREAM)
@@ -14,7 +19,8 @@ client_socket.connect(server_address)
 print("Terhubung ke {}:{}".format(ip, str(port)))
 
 # First, send the key with RSA.
-b64key = b64encode(str(keys))
+keys = RSA.enc(AES.keys)
+b64key = b64encode(str(keys).encode()).decode()
 client_socket.send(b64key.encode())
 
 path = input('File : ')
@@ -26,7 +32,6 @@ except Exception as e:
     exit()
     
 # AES implementation : File in base64 encrypted with AES
-
 client_socket.send(b64f.encode())
 data = client_socket.recv(1024).decode()
 
